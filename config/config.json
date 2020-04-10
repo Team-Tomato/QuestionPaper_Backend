@@ -1,0 +1,9 @@
+{
+    "DATABASE": {
+        "USERNAME": "ecom-akbar.h",
+        "PASSWORD": "",
+        "HOSTNAME": "127.0.0.1",
+        "PORT": "5432",
+        "DATABASENAME": "postgis_test"
+    }
+}

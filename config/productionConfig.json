@@ -1,0 +1,9 @@
+{
+    "DATABASE": {
+        "USERNAME": "ddjfcxaymfxeei",
+        "PASSWORD": "0b45c43b3ba8b37d39a41ae1aae500afb81a4c09fd815b831e5ce0cf8174cd39",
+        "HOSTNAME": "ec2-18-215-99-63.compute-1.amazonaws.com",
+        "PORT": "5432",
+        "DATABASENAME": "d6k6rfqg3qm4ve"
+    }
+}
