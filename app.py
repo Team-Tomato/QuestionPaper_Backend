@@ -68,4 +68,4 @@ api.add_resource(questionPaper, '/api/v1/teamtomato/')
 
 if __name__ == "__main__":
     # app.run()
-    serve(app, host="0.0.0.0", port=4950)
+    serve(app, port=4950)
