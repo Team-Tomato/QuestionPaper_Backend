@@ -74,4 +74,5 @@ api.add_resource(TeamTomato, '/')
 
 if __name__ == "__main__":
     # app.run()
-    serve(app, port=4950)
+    # serve(app, port=4950)
+    serve(app)
