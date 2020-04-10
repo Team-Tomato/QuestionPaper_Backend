@@ -25,7 +25,7 @@ def getDbConnection():
                                     password = app.config["DATABASE"]["PASSWORD"],
                                     host = app.config["DATABASE"]["HOSTNAME"],
                                     port = app.config["DATABASE"]["PORT"],
-                                    database = app.config["DATABASE"]["DATABASENAME"] )# dbConnection = psycopg2.connect("postgres://app.config["DATABASE"]["USERNAME"]:app.config["DATABASE"]["PASSWORD"]@app.config["DATABASE"]["HOSTNAME"]:5432/app.config["DATABASE"]["DATABASENAME"]")
+                                    database = app.config["DATABASE"]["DATABASENAME"] )
     return [dbConnection, dbConnection.cursor()]
 
 def closeDbConnection(connection, cursor):
