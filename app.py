@@ -63,7 +63,13 @@ class questionPaper(Resource):
             closeDbConnection(DbConnection, cursor)
 
 
+class TeamTomato(Resource):
+    def get(self):
+        return "<h1>Team Tomato welcome you</h1>"
+
+
 api.add_resource(questionPaper, '/api/v1/teamtomato/')
+api.add_resource(TeamTomato, '/')
 
 
 if __name__ == "__main__":
