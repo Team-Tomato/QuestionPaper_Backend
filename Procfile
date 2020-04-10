@@ -1,0 +1,1 @@
+web: waitress-serve —port=4950 app:app
