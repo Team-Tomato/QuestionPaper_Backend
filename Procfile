@@ -1,1 +1,1 @@
-web: waitress-serve —port=4950 nuncio:app
+web: waitress-serve —port=4950 app:app
