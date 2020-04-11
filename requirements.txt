@@ -1,5 +1,5 @@
-requests==2.23.0
-psycopg2==2.8.4
-Flask_RESTful==0.3.8
 waitress==1.4.3
+requests==2.23.0
+Flask_RESTful==0.3.8
+psycopg2==2.8.4
 Flask==1.1.1

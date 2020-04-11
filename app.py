@@ -11,7 +11,9 @@ from flask_restful import reqparse, Api, Resource
 
 # Initialize the App
 app = flask.Flask(__name__)
-app.config.from_json(os.path.join(os.path.abspath(os.getcwd()),'config/productionConfig.json'))
+#Dev environment    - config/config.json
+#Prod environement  - config/productionConfig.json
+app.config.from_json(os.path.join(os.path.abspath(os.getcwd()),'config/config.json'))
 api = Api(app)
 
 
@@ -65,7 +67,7 @@ class questionPaper(Resource):
 
 class TeamTomato(Resource):
     def get(self):
-        return "<h1>Team Tomato welcome you</h1>"
+        return "Team Tomato welcomes you"
 
 
 api.add_resource(questionPaper, '/api/v1/teamtomato/')
@@ -74,5 +76,5 @@ api.add_resource(TeamTomato, '/')
 
 if __name__ == "__main__":
     # app.run()
-    # serve(app, port=4950)
+    # serve(app, port=(process.env.PORT or 4950))
     serve(app)
