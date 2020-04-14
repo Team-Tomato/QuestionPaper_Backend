@@ -82,6 +82,7 @@ class TeamTomato(Resource):
     def get(self):
         return "Team Tomato welcomes you"
 
+# API - CRUD
 class List(Resource):
     def get(self):
         return jsonify(questionPapers)
@@ -92,11 +93,33 @@ class addToList(Resource):
         questionPapers.append(new_subject)
         return jsonify(questionPapers)
 
+class updateCourseCode(Resource):
+    def put(self,old,latest):
+        for items in questionPapers:
+            if items["Course Code"]==old:
+                items["Course Code"]=latest
+        return jsonify(questionPapers)
 
+class deleteCourse(Resource):
+    def delete(self,code):
+        for items in questionPapers:
+            if items["Course Code"]==code:
+                questionPapers.remove(items)
+        return jsonify(questionPapers)
+
+#GET Method
 api.add_resource(questionPaper, '/api/v1/teamtomato/')
 api.add_resource(TeamTomato, '/')
-api.add_resource(List,'/listQPS')
-api.add_resource(addToList,'/addQP')
+api.add_resource(List,'/R')
+
+#POST Method
+api.add_resource(addToList,'/C')                                        
+                                             
+#PUT Method
+api.add_resource(updateCourseCode,'/U/<string:old>/<string:latest>')    
+
+#DELETE Method
+api.add_resource(deleteCourse,'/D/<string:code>')                       
 
 
 if __name__ == "__main__":
