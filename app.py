@@ -3,11 +3,24 @@ import json
 import flask
 import requests
 import psycopg2
-from flask import request
+from flask import request,jsonify
 from waitress import serve
 from databaseScripts.searchQueries import *
 from flask_restful import reqparse, Api, Resource
 
+#An Array of key:value pairs
+questionPapers=[
+{
+    "Course Code":"XC7351",
+    "Course Title":"Data Structures",
+    "Year":"2019"
+},
+{
+    "Course Code":"XC7352",
+    "Course Title":"Database Management Systems",
+    "Year":"2019"
+}
+]
 
 # Initialize the App
 app = flask.Flask(__name__)
@@ -69,9 +82,21 @@ class TeamTomato(Resource):
     def get(self):
         return "Team Tomato welcomes you"
 
+class List(Resource):
+    def get(self):
+        return jsonify(questionPapers)
+
+class addToList(Resource):
+    def post(self):
+        new_subject=request.get_json()
+        questionPapers.append(new_subject)
+        return jsonify(questionPapers)
+
 
 api.add_resource(questionPaper, '/api/v1/teamtomato/')
 api.add_resource(TeamTomato, '/')
+api.add_resource(List,'/listQPS')
+api.add_resource(addToList,'/addQP')
 
 
 if __name__ == "__main__":
