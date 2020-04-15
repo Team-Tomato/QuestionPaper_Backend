@@ -8,3 +8,10 @@ CREATE TABLE IF NOT EXISTS questionpaper (
 	year INT,
 	url TEXT
 );
+
+CREATE TABLE IF NOT EXISTS questionPapers (
+	CODE TEXT,
+	NAME TEXT,
+	YEAR INT,
+	URL TEXT
+);

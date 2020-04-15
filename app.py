@@ -8,20 +8,6 @@ from waitress import serve
 from databaseScripts.searchQueries import *
 from flask_restful import reqparse, Api, Resource
 
-#An Array of key:value pairs
-questionPapers=[
-{
-    "Course Code":"XC7351",
-    "Course Title":"Data Structures",
-    "Year":"2019"
-},
-{
-    "Course Code":"XC7352",
-    "Course Title":"Database Management Systems",
-    "Year":"2019"
-}
-]
-
 # Initialize the App
 app = flask.Flask(__name__)
 #Dev environment    - config/config.json
@@ -41,6 +27,15 @@ def getDbConnection():
                                     host = app.config["DATABASE"]["HOSTNAME"],
                                     port = app.config["DATABASE"]["PORT"],
                                     database = app.config["DATABASE"]["DATABASENAME"] )
+    return [dbConnection, dbConnection.cursor()]
+
+def getDbConnectionVK():
+    dbConnection = psycopg2.connect( user = app.config["DATABASEVK"]["USERNAME"],
+                                    password = app.config["DATABASEVK"]["PASSWORD"],
+                                    host = app.config["DATABASEVK"]["HOSTNAME"],
+                                    port = app.config["DATABASEVK"]["PORT"],
+                                    database = app.config["DATABASEVK"]["DATABASENAME"] )
+    
     return [dbConnection, dbConnection.cursor()]
 
 def closeDbConnection(connection, cursor):
@@ -77,6 +72,17 @@ class questionPaper(Resource):
         finally:
             closeDbConnection(DbConnection, cursor)
 
+def showDB():
+    con,cur=getDbConnectionVK()
+    try:
+        cur.execute("SELECT * from questionPapers")
+        rows = cur.fetchall()
+        all_data=[{"Course Code":row[0],"Course Title":row[1],"Year":row[2],"URL":row[3]} for row in rows]
+        closeDbConnection(con, cur)
+        return all_data
+    except(Exception) as error:
+        closeDbConnection(con, cur)
+        return [ {"message": str(error)}  ]
 
 class TeamTomato(Resource):
     def get(self):
@@ -85,27 +91,53 @@ class TeamTomato(Resource):
 # API - CRUD
 class List(Resource):
     def get(self):
-        return jsonify(questionPapers)
+        vk=showDB()
+        if len(vk)!=0:
+            return jsonify(vk)
+        return "No QuestionPaper Found"
 
-class addToList(Resource):
+class AddToList(Resource):
     def post(self):
         new_subject=request.get_json()
-        questionPapers.append(new_subject)
-        return jsonify(questionPapers)
+        con,cur=getDbConnectionVK()
+        try:
+            cc=new_subject["Course Code"]
+            ct=new_subject["Course Title"]
+            cy=new_subject["Year"]
+            cu=new_subject["URL"]
+            cur.execute(insertIntoTable,(cc,ct,cy,cu))
+            con.commit()
+        except(Exception) as error:
+            closeDbConnection(con, cur)
+            return [ {"message": str(error)}  ]
+        closeDbConnection(con, cur)
+        return jsonify(new_subject)
 
-class updateCourseCode(Resource):
+class UpdateCourseCode(Resource):
     def put(self,old,latest):
-        for items in questionPapers:
-            if items["Course Code"]==old:
-                items["Course Code"]=latest
-        return jsonify(questionPapers)
+        con,cur=getDbConnectionVK()
+        try:
+            cur.execute(updateTable,(latest,old))
+            con.commit()
+            db=showDB()
+            closeDbConnection(con, cur)
+        except(Exception) as error:
+            closeDbConnection(con, cur)
+            return [ {"message": str(error)}  ]
+        return jsonify(db)
 
-class deleteCourse(Resource):
+class DeleteCourse(Resource):
     def delete(self,code):
-        for items in questionPapers:
-            if items["Course Code"]==code:
-                questionPapers.remove(items)
-        return jsonify(questionPapers)
+        con,cur=getDbConnectionVK()
+        try:
+            cur.execute(deleteTable.format(code))
+            con.commit()
+            db=showDB()
+            closeDbConnection(con, cur)
+        except(Exception) as error:
+            closeDbConnection(con, cur)
+            return [ {"message": str(error)}  ]
+        return jsonify(db)
 
 #GET Method
 api.add_resource(questionPaper, '/api/v1/teamtomato/')
@@ -113,16 +145,20 @@ api.add_resource(TeamTomato, '/')
 api.add_resource(List,'/R')
 
 #POST Method
-api.add_resource(addToList,'/C')                                        
+api.add_resource(AddToList,'/C')                                        
                                              
 #PUT Method
-api.add_resource(updateCourseCode,'/U/<string:old>/<string:latest>')    
+api.add_resource(UpdateCourseCode,'/U/<string:old>/<string:latest>')    
 
 #DELETE Method
-api.add_resource(deleteCourse,'/D/<string:code>')                       
+api.add_resource(DeleteCourse,'/D/<string:code>')                       
 
 
 if __name__ == "__main__":
     # app.run()
     # serve(app, port=(process.env.PORT or 4950))
+    con,cur=getDbConnectionVK()
+    cur.execute("CREATE TABLE questionPapers(CODE TEXT,NAME TEXT,YEAR INT,URL TEXT);")
+    con.commit()
+    con.close()
     serve(app)
