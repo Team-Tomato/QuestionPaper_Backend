@@ -5,12 +5,5 @@
         "HOSTNAME": "127.0.0.1",
         "PORT": "5432",
         "DATABASENAME": "postgis_test"
-    },
-    "DATABASEVK": {
-        "USERNAME": "postgres",
-        "PASSWORD": "27*Venky@5",
-        "HOSTNAME": "127.0.0.1",
-        "PORT": "5432",
-        "DATABASENAME": "sampleDB"
     }
 }

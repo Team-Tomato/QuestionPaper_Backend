@@ -7,6 +7,7 @@ from flask import request,jsonify
 from waitress import serve
 from databaseScripts.searchQueries import *
 from flask_restful import reqparse, Api, Resource
+from flask_sqlalchemy import SQLAlchemy
 
 # Initialize the App
 app = flask.Flask(__name__)
@@ -14,11 +15,22 @@ app = flask.Flask(__name__)
 #Prod environement  - config/productionConfig.json
 app.config.from_json(os.path.join(os.path.abspath(os.getcwd()),'config/config.json'))
 api = Api(app)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+app.config['SQLALCHEMY_DATABASE_URI'] = ''
+db=SQLAlchemy(app)
 
 
 # Parsable arguments
 parser = reqparse.RequestParser()
 parser.add_argument('keyword')
+
+# Python object for questionPapers table
+class Subject(db.Model):
+    __tablename__ = 'questionpapers'
+    name=db.Column('name',db.String(25), primary_key = True)
+    code=db.Column('code',db.String(25))
+    year=db.Column('year',db.Integer)
+    url=db.Column('url',db.String(25))
 
 
 def getDbConnection():
@@ -29,14 +41,6 @@ def getDbConnection():
                                     database = app.config["DATABASE"]["DATABASENAME"] )
     return [dbConnection, dbConnection.cursor()]
 
-def getDbConnectionVK():
-    dbConnection = psycopg2.connect( user = app.config["DATABASEVK"]["USERNAME"],
-                                    password = app.config["DATABASEVK"]["PASSWORD"],
-                                    host = app.config["DATABASEVK"]["HOSTNAME"],
-                                    port = app.config["DATABASEVK"]["PORT"],
-                                    database = app.config["DATABASEVK"]["DATABASENAME"] )
-    
-    return [dbConnection, dbConnection.cursor()]
 
 def closeDbConnection(connection, cursor):
     if(connection):
@@ -73,16 +77,12 @@ class questionPaper(Resource):
             closeDbConnection(DbConnection, cursor)
 
 def showDB():
-    con,cur=getDbConnectionVK()
     try:
-        cur.execute("SELECT * from questionPapers")
-        rows = cur.fetchall()
-        all_data=[{"Course Code":row[0],"Course Title":row[1],"Year":row[2],"URL":row[3]} for row in rows]
-        closeDbConnection(con, cur)
-        return all_data
+        rows=Subject.query.all()
+        all_data=[{"Course Code":row.code,"Course Title":row.name,"Year":row.year,"URL":row.url} for row in rows]
     except(Exception) as error:
-        closeDbConnection(con, cur)
-        return [ {"message": str(error)}  ]
+        return {"message": str(error)}
+    return all_data
 
 class TeamTomato(Resource):
     def get(self):
@@ -99,45 +99,33 @@ class List(Resource):
 class AddToList(Resource):
     def post(self):
         new_subject=request.get_json()
-        con,cur=getDbConnectionVK()
         try:
-            cc=new_subject["Course Code"]
-            ct=new_subject["Course Title"]
-            cy=new_subject["Year"]
-            cu=new_subject["URL"]
-            cur.execute(insertIntoTable,(cc,ct,cy,cu))
-            con.commit()
+            sub=Subject(name=new_subject["Course Title"],code=new_subject["Course Code"],year=new_subject["Year"],url=new_subject["URL"])
+            db.session.add(sub)
+            db.session.commit()
         except(Exception) as error:
-            closeDbConnection(con, cur)
-            return [ {"message": str(error)}  ]
-        closeDbConnection(con, cur)
-        return jsonify(new_subject)
+            return {"message": str(error)}
+        return "success"
 
 class UpdateCourseCode(Resource):
     def put(self,old,latest):
-        con,cur=getDbConnectionVK()
         try:
-            cur.execute(updateTable,(latest,old))
-            con.commit()
-            db=showDB()
-            closeDbConnection(con, cur)
+            you=Subject.query.filter_by(code=old).update({Subject.code:latest})
+            db.session.commit()
         except(Exception) as error:
-            closeDbConnection(con, cur)
-            return [ {"message": str(error)}  ]
-        return jsonify(db)
+            return {"message": str(error)}
+        return "success"
 
 class DeleteCourse(Resource):
     def delete(self,code):
-        con,cur=getDbConnectionVK()
         try:
-            cur.execute(deleteTable.format(code))
-            con.commit()
-            db=showDB()
-            closeDbConnection(con, cur)
+            sub=Subject.query.filter_by(code=code).all()
+            for i in sub:
+                db.session.delete(i)
+            db.session.commit()
         except(Exception) as error:
-            closeDbConnection(con, cur)
-            return [ {"message": str(error)}  ]
-        return jsonify(db)
+            return {"message": str(error)}
+        return "success"
 
 #GET Method
 api.add_resource(questionPaper, '/api/v1/teamtomato/')
@@ -157,8 +145,4 @@ api.add_resource(DeleteCourse,'/D/<string:code>')
 if __name__ == "__main__":
     # app.run()
     # serve(app, port=(process.env.PORT or 4950))
-    con,cur=getDbConnectionVK()
-    cur.execute("CREATE TABLE questionPapers(CODE TEXT,NAME TEXT,YEAR INT,URL TEXT);")
-    con.commit()
-    con.close()
     serve(app)
