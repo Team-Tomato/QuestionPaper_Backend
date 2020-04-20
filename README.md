@@ -1,22 +1,9 @@
 # web-app-Question-paper
 Flask API serves questionpaper URL from the drive repository.
 
-### API
-##### API 01 - questionPaper
-host:port/api/v1/teamtomato/
-```json
-Response:   {
-                "success": ,
-                "message": ,
-                "data": []
-            }
-```
+### Postman Collection : https://www.getpostman.com/collections/63a0dfc9ae6d2657ee29
 
-##### API 02 - TestApi(TeamTomato)
-host:port/
-```
-Team Tomato welcomes you
-```
+### Deployed in heroku : https://teamtomato.herokuapp.com
 
 ### Setup for development
 1. clone the repo to your local
