@@ -23,7 +23,6 @@ class Config(object):
   CSRF_ENABLED = True
   SECRET_KEY = 'this-really-needs-to-be-changed'
 
-
 class ProductionConfig(Config):
   SQLALCHEMY_DATABASE_URI = get_env_variable('DATABASE_URL')
   DEBUG = False
