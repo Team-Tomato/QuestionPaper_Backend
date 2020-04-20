@@ -14,12 +14,24 @@ git clone https://github.com/Team-Tomato/QuestionPaper_Backend.git
 ```
 pip install requirements.txt
 ```
-3. Change the **config/config.json** file according to your local postgres database
-4. Create the database in your local and execute the db initialisation scripts available in the databaseScripts/dbInitialisation.sql
-5. For development environment, ensure Line 16 in app.py was set to config/config.json
+3. Add or modify the **.env** file according to your local postgres database. Here is the example **.env** file. Leave the APP_SETTINGS as it is.
+```
+APP_SETTINGS="config.DevelopmentConfig"
+POSTGRES_URL="127.0.0.1:5432"
+POSTGRES_USER="postgres"
+POSTGRES_PW="password"
+POSTGRES_DB="db-name"
+```
+4. Create the database in your local with your database name "db-name" adn start your local database server.
+5. Run the following commands to mirate the database.
+```
+python manage.py db init
+python manage.py db migrate
+python manage.py db upgrade
+```
 6. Start the server,
 ```
-python app.py
+python manage.py runserver
 ```
 7. Try hitting the end points for sample testing.
 
