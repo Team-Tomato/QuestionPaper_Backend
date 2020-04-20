@@ -51,7 +51,7 @@ def add_question():
     except Exception as e:
 	    return(str(e))
 
-@app.route("/api/v1/question/getall", methods=['GET'])
+@app.route("/api/v1/question", methods=['GET'])
 def get_all_questions():
     try:
         questions=Question.query.all()
