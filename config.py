@@ -25,7 +25,7 @@ class Config(object):
 
 
 class ProductionConfig(Config):
-  SQLALCHEMY_DATABASE_URI = get_env_variable['DATABASE_URL']
+  SQLALCHEMY_DATABASE_URI = get_env_variable('DATABASE_URL')
   DEBUG = False
 
 
