@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_, func
 from dotenv import load_dotenv
 import os
 
@@ -21,49 +22,59 @@ def get():
 
 @app.route("/api/v1/question/add", methods=['POST'])
 def add_question():
-    question_data = request.get_json()['question']
+  question_data = request.get_json()['question']
 
-    subjectName = question_data['subjectName']
-    shortForm = question_data['shortForm']
-    staff = question_data['staff']
-    year = question_data['year']
-    url = question_data['url']
+  subjectName = question_data['subjectName']
+  shortForm = question_data['shortForm']
+  staff = question_data['staff']
+  year = question_data['year']
+  url = question_data['url']
 
-    try:
-        question=Question(
-            subjectName = subjectName,
-            shortForm = shortForm,
-            staff = staff,
-            year = year,
-            url = url
-        )
-        db.session.add(question)
-        db.session.commit()
-        res = {
-          'id': question.id,
-          'subjectName': question.subjectName,
-          'shortForm': question.shortForm,
-          'staff': question.staff,
-          'year': question.year,
-          'url': question.url
-        }
-        return jsonify(res)
-    except Exception as e:
-	    return(str(e))
+  try:
+    question=Question(
+        subjectName = subjectName,
+        shortForm = shortForm,
+        staff = staff,
+        year = year,
+        url = url
+    )
+    db.session.add(question)
+    db.session.commit()
+    res = {
+      'id': question.id,
+      'subjectName': question.subjectName,
+      'shortForm': question.shortForm,
+      'staff': question.staff,
+      'year': question.year,
+      'url': question.url
+    }
+    return jsonify(res)
+  except Exception as e:
+    return(str(e))
 
 @app.route("/api/v1/question", methods=['GET'])
 def get_all_questions():
     try:
-        questions=Question.query.all()
-        return  jsonify([e.serialize() for e in questions])
+      questions = Question.query.all()
+      return  jsonify([e.serialize() for e in questions])
     except Exception as e:
 	    return(str(e))
 
 @app.route("/api/v1/question/<id_>", methods=['GET'])
 def get_question_by_id(id_):
     try:
-        question=Question.query.filter_by(id=id_).first()
-        return jsonify(question.serialize())
+      question = Question.query.filter_by(id=id_).first()
+      return jsonify(question.serialize())
+    except Exception as e:
+	    return(str(e))
+
+@app.route("/api/v1/question/search", methods=['GET'])
+def search_question():
+    try:
+      search_str = "%"+request.args.get('search_str')+"%"
+      questions = Question.query.filter(or_(Question.subjectName.ilike(search_str), Question.staff.ilike(search_str), Question.shortForm.ilike(search_str)))
+      print(questions)
+      return  jsonify([e.serialize() for e in questions])
     except Exception as e:
 	    return(str(e))
 
