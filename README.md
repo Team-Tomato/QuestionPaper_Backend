@@ -32,6 +32,7 @@ POSTGRES_DB="db-name"
 ```
 python manage.py db init            #If prompts error, leave it.
 python manage.py db migrate
+python manage.py db upgrade
 ```
 7. Start the server,
 ```
