@@ -3,9 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, func
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 APP_ROOT = os.path.dirname(__file__)   # refers to application_top
 dotenv_path = os.path.join(APP_ROOT, '.env')
