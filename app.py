@@ -109,7 +109,7 @@ def contact_us():
     }
     return jsonify(res)
   except Exception as e:
-    retrun(str(e)) 
+    return (str(e)) 
 
 def __send_email(sub, recipient_list):
   msg = Message(subject=sub,
