@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, func
 from dotenv import load_dotenv
+from flask_mail import Mail, Message
 import os
 
 app = Flask(__name__)
@@ -13,6 +14,20 @@ load_dotenv(dotenv_path)
 app.config.from_object(os.getenv('APP_SETTINGS'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# Mail settings
+mail_settings = {
+  "MAIL_SERVER": 'smtp.gmail.com',
+  "MAIL_PORT": 465,
+  "MAIL_USE_TLS": False,
+  "MAIL_USE_SSL": True,
+  "MAIL_USERNAME": os.getenv('EMAIL_USER'),
+  "MAIL_PASSWORD": os.getenv('EMAIL_PASSWORD')
+}
+print(os.getenv('EMAIL_PASSWORD'))
+print(os.getenv('EMAIL_USER'))
+app.config.update(mail_settings)
+mail = Mail(app)
 
 from models import Question
 
@@ -54,29 +69,54 @@ def add_question():
 
 @app.route("/api/v1/question", methods=['GET'])
 def get_all_questions():
-    try:
-      questions = Question.query.all()
-      return  jsonify([e.serialize() for e in questions])
-    except Exception as e:
-	    return(str(e))
+  try:
+    questions = Question.query.all()
+    return  jsonify([e.serialize() for e in questions])
+  except Exception as e:
+    return(str(e))
 
 @app.route("/api/v1/question/<id_>", methods=['GET'])
 def get_question_by_id(id_):
-    try:
-      question = Question.query.filter_by(id=id_).first()
-      return jsonify(question.serialize())
-    except Exception as e:
-	    return(str(e))
+  try:
+    question = Question.query.filter_by(id=id_).first()
+    return jsonify(question.serialize())
+  except Exception as e:
+    return(str(e))
 
 @app.route("/api/v1/question/search", methods=['GET'])
 def search_question():
-    try:
-      search_str = "%"+request.args.get('search_str')+"%"
-      questions = Question.query.filter(or_(Question.subjectName.ilike(search_str), Question.staff.ilike(search_str), Question.shortForm.ilike(search_str)))
-      print(questions)
-      return  jsonify([e.serialize() for e in questions])
-    except Exception as e:
-	    return(str(e))
+  try:
+    search_str = "%"+request.args.get('search_str')+"%"
+    questions = Question.query.filter(or_(Question.subjectName.ilike(search_str), Question.staff.ilike(search_str), Question.shortForm.ilike(search_str)))
+    print(questions)
+    return  jsonify([e.serialize() for e in questions])
+  except Exception as e:
+    return(str(e))
+
+@app.route("/api/v1/contactus", methods=['POST'])
+def contact_us():
+  try:
+    contact_data = request.get_json()['contact']
+    name = contact_data['name']
+    email = contact_data['email']
+    message = contact_data['message']
+    __send_email(os.getenv('EMAIL_SUB'), [email])
+    res = {
+        'status': "Submission successful",
+        'name': name,
+        'email': email,
+        'message': message
+    }
+    return jsonify(res)
+  except Exception as e:
+    retrun(str(e)) 
+
+def __send_email(sub, recipient_list):
+  msg = Message(subject=sub,
+              sender = (os.getenv('MAIL_SENDER_NAME'), app.config.get("MAIL_USERNAME")),
+              recipients = recipient_list,
+              body = "This is a test email I sent with Gmail and Python!")
+  mail.send(msg)
 
 if __name__ == '__main__':
     app.run()
