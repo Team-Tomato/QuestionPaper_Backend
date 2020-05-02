@@ -4,6 +4,7 @@ import os,requests,json
 
 app = Flask(__name__)
 g = Github()
+# An API to show the sum of commits,pr's and contributors of Team-Tomato
 @app.route('/get_total')
 def total():
     commits = 0
