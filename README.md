@@ -26,6 +26,8 @@ POSTGRES_URL="127.0.0.1:5432"
 POSTGRES_USER="postgres"
 POSTGRES_PW="password"
 POSTGRES_DB="db-name"
+USER_API="https://api.github.com/users/Team-Tomato/repos"
+REPO="Team-Tomato/{}"
 ```
 5. Create the database in your local with your database name **db-name** adn start your local database server.
 6. Run the following commands to mirate the database.
