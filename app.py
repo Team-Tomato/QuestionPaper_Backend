@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, func
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
-import os
+from github import Github
+import os,requests,json
 
 app = Flask(__name__)
 
@@ -11,25 +12,27 @@ APP_ROOT = os.path.dirname(__file__)   # refers to application_top
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
-app.config.from_object(os.getenv('APP_SETTINGS'))
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+g = Github()
 
-# Mail settings
-mail_settings = {
-  "MAIL_SERVER": 'smtp.gmail.com',
-  "MAIL_PORT": 465,
-  "MAIL_USE_TLS": False,
-  "MAIL_USE_SSL": True,
-  "MAIL_USERNAME": os.getenv('EMAIL_USER'),
-  "MAIL_PASSWORD": os.getenv('EMAIL_PASSWORD')
-}
-print(os.getenv('EMAIL_PASSWORD'))
-print(os.getenv('EMAIL_USER'))
-app.config.update(mail_settings)
-mail = Mail(app)
+# app.config.from_object(os.getenv('APP_SETTINGS'))
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# db = SQLAlchemy(app)
 
-from models import Question
+# # Mail settings
+# mail_settings = {
+#   "MAIL_SERVER": 'smtp.gmail.com',
+#   "MAIL_PORT": 465,
+#   "MAIL_USE_TLS": False,
+#   "MAIL_USE_SSL": True,
+#   "MAIL_USERNAME": os.getenv('EMAIL_USER'),
+#   "MAIL_PASSWORD": os.getenv('EMAIL_PASSWORD')
+# }
+# print(os.getenv('EMAIL_PASSWORD'))
+# print(os.getenv('EMAIL_USER'))
+# app.config.update(mail_settings)
+# mail = Mail(app)
+
+# from models import Question
 
 @app.route("/", methods=['GET'])
 def get():
@@ -110,6 +113,23 @@ def contact_us():
     return jsonify(res)
   except Exception as e:
     return (str(e)) 
+
+@app.route('/api/v1/get_total')
+def total():
+    commits = 0
+    pulls = 0
+    conts = 0
+    a = requests.get(os.getenv("USER_API"))
+    y = json.loads(a.text)
+    for i in y:
+        repository = os.getenv("REPO").format(i["name"])
+        repo = g.get_repo(repository)
+        pulls += repo.get_pulls().totalCount
+        commits += repo.get_commits().totalCount
+        conts += repo.get_contributors().totalCount
+    lst = []
+    lst.append(dict([("Name: ", "Team-Tomato"), ("Pull Requests: ", pulls), ("Commits: ", commits), ("Contributors: ", conts)]))
+    return jsonify(lst)
 
 def __send_email(sub, recipient_list):
   msg = Message(subject=sub,
