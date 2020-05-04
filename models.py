@@ -29,3 +29,22 @@ class Question(db.Model):
             'year' :self.year,
             'url' :self.url
         }
+
+class Book(db.Model):
+    __tablename__="books"
+    bookAuthor=db.Column(db.String(), primary_key=True)
+    bookTitle=db.Column(db.String())
+    bookImagePath=db.Column(db.String())
+    bookUrlPath=db.Column(db.String())
+
+    def __init__(self, bookAuthor, bookTitle, bookImagePath, bookUrlPath):
+        self.bookAuthor = bookAuthor
+        self.bookTitle = bookTitle
+        self.bookImagePath = bookImagePath
+        self.bookUrlPath = bookUrlPath
+    
+    def serialize(self):
+        return { 
+            'bookAuthor': self.bookAuthor,
+            'bookTitle': self.bookTitle
+        }
