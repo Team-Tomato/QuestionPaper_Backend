@@ -29,3 +29,28 @@ class Question(db.Model):
             'year' :self.year,
             'url' :self.url
         }
+class Book(db.Model):
+    __tablename__ = 'books'
+
+    id = db.Column(db.Integer, primary_key=True)
+    Author = db.Column(db.String())
+    Title = db.Column(db.String())
+    Image = db.Column(db.LargeBinary)
+    Url = db.Column(db.String())
+
+    def __init__(self, Author, Title, Image, Url):
+        self.Author = Author
+        self.Title = Title
+        self.Image = Image
+        self.Url = Url
+
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'Author': self.Author,
+            'title': self.Title,
+            'Url': self.Url
+        }
