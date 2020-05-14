@@ -3,13 +3,16 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, func
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
-import os
+from github import Github
+import os,requests,json
 
 app = Flask(__name__)
 
 APP_ROOT = os.path.dirname(__file__)   # refers to application_top
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
+
+
 
 app.config.from_object(os.getenv('APP_SETTINGS'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -110,6 +113,26 @@ def contact_us():
     return jsonify(res)
   except Exception as e:
     return (str(e)) 
+
+
+@app.route("/Api/v1/get_totaL")
+def vicky():
+    g = Github()
+    details=[]
+    try:
+        pulls=0
+        commits=0
+        conts=0
+        print("start")
+        for repo in g.get_user(os.getenv("USER_NAME")).get_repos():
+            repo1 = g.get_repo(repo.full_name)
+            pulls += repo1.get_pulls().totalCount
+            commits += repo1.get_commits().totalCount
+            conts += repo1.get_contributors().totalCount
+        details.append(dict([("Name: ", "Team-Tomato"), ("Pull Requests: ", pulls), ("Commits: ", commits), ("Contributors: ", conts)]))
+        return jsonify(details)
+    except Exception as e:
+        return(str(e))
 
 def __send_email(sub, recipient_list):
   msg = Message(subject=sub,
