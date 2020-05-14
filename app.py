@@ -4,18 +4,33 @@ from sqlalchemy import or_, func
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
 from flask_cors import CORS
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 import os
 
 app = Flask(__name__)
 CORS(app)
 
+#Dot env added
 APP_ROOT = os.path.dirname(__file__)   # refers to application_top
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
+#SQLalchemy
 app.config.from_object(os.getenv('APP_SETTINGS'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+#Importing Model
+from models import Question
+
+
+#Flask admin panel
+app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+admin = Admin(app, name='Team Tomato', template_mode='bootstrap3')
+
+#Flask admin model views
+admin.add_view(ModelView(Question, db.session))
 
 # Mail settings
 mail_settings = {
@@ -30,8 +45,6 @@ print(os.getenv('EMAIL_PASSWORD'))
 print(os.getenv('EMAIL_USER'))
 app.config.update(mail_settings)
 mail = Mail(app)
-
-from models import Question
 
 @app.route("/", methods=['GET'])
 def get():
