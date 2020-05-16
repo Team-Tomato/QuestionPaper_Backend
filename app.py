@@ -141,5 +141,35 @@ def __send_email(sub, recipient_list):
               body = "This is a test email I sent with Gmail and Python!")
   mail.send(msg)
 
+from models import Book
+@app.route('/<string:a>/<string:t>/<string:u>', methods=['POST'])
+def add_book(a, t, u):
+    ni = request.files['Image']
+    img = Book(Author=a, Title=t, Image=ni.read(), Url=u)
+    db.session.add(img)
+    db.session.commit()
+    return "Book Details Added Successfully"
+
+
+@app.route("/api/v1/showBooks", methods=['GET'])
+def get_all_books():
+    try:
+        books = Book.query.all()
+        return jsonify([e.serialize() for e in books])
+    except Exception as e:
+        return str(e)
+
+
+@app.route("/search", methods=['GET'])
+def search_book():
+    try:
+        search_str = "%" + request.args.get('search_str') + "%"
+        books = Book.query.filter(or_(Book.Author.ilike(search_str), Book.Title.ilike(search_str)))
+        print(books)
+        return jsonify([e.serialize() for e in books])
+    except Exception as e:
+        return str(e)
+
+
 if __name__ == '__main__':
     app.run()
