@@ -115,7 +115,7 @@ def contact_us():
     return (str(e)) 
 
 
-@app.route("/Api/v1/get_totaL")
+@app.route("/api/v1/github/contributors")
 def vicky():
     g = Github()
     details=[]
