@@ -31,20 +31,27 @@ class Question(db.Model):
         }
 
 class Book(db.Model):
-    __tablename__="books"
-    bookAuthor=db.Column(db.String(), primary_key=True)
-    bookTitle=db.Column(db.String())
-    bookImagePath=db.Column(db.String())
-    bookUrlPath=db.Column(db.String())
+    __tablename__ = 'books'
 
-    def __init__(self, bookAuthor, bookTitle, bookImagePath, bookUrlPath):
-        self.bookAuthor = bookAuthor
-        self.bookTitle = bookTitle
-        self.bookImagePath = bookImagePath
-        self.bookUrlPath = bookUrlPath
-    
+    id = db.Column(db.Integer, primary_key=True)
+    Author = db.Column(db.String())
+    Title = db.Column(db.String())
+    Image = db.Column(db.LargeBinary)
+    Url = db.Column(db.String())
+
+    def __init__(self, Author, Title, Image, Url):
+        self.Author = Author
+        self.Title = Title
+        self.Image = Image
+        self.Url = Url
+
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
+
     def serialize(self):
-        return { 
-            'bookAuthor': self.bookAuthor,
-            'bookTitle': self.bookTitle
+        return {
+            'id': self.id,
+            'Author': self.Author,
+            'title': self.Title,
+            'Url': self.Url
         }
