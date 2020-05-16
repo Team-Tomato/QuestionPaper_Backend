@@ -29,6 +29,7 @@ class Question(db.Model):
             'year' :self.year,
             'url' :self.url
         }
+
 class Book(db.Model):
     __tablename__ = 'books'
 
