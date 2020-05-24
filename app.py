@@ -106,7 +106,7 @@ def contact_us():
     name = contact_data['name']
     email = contact_data['email']
     message = contact_data['message']
-    __send_email(os.getenv('EMAIL_SUB'), [email], message)
+    __send_email(os.getenv('EMAIL_SUB'), email, message)
     res = {
         'status': "Submission successful",
         'name': name,
@@ -120,8 +120,8 @@ def contact_us():
 def __send_email(sub, recipient_list, message):
   msg = Message(subject=sub,
               sender = (os.getenv('MAIL_SENDER_NAME'), app.config.get("MAIL_USERNAME")),
-              recipients = os.getenv("USER_NAME"),
-              body = "From: "+recipient_list+"Message: "+message)
+              recipients = [os.getenv("RECEIVER_MAIL")],
+              body = "From: "+recipient_list+" --- Message: "+message)
   mail.send(msg)
 
 
