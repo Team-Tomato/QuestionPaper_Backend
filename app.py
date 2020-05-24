@@ -31,6 +31,7 @@ admin = Admin(app, name='Team Tomato', template_mode='bootstrap3')
 
 #Flask admin model views
 admin.add_view(ModelView(Question, db.session))
+admin.add_view(ModelView(Book, db.session))
 
 # Mail settings
 mail_settings = {
