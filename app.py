@@ -12,13 +12,12 @@ APP_ROOT = os.path.dirname(__file__)   # refers to application_top
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
-
-
 app.config.from_object(os.getenv('APP_SETTINGS'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Mail settings
+
 mail_settings = {
   "MAIL_SERVER": 'smtp.gmail.com',
   "MAIL_PORT": 465,
@@ -31,6 +30,8 @@ print(os.getenv('EMAIL_PASSWORD'))
 print(os.getenv('EMAIL_USER'))
 app.config.update(mail_settings)
 mail = Mail(app)
+
+# Questions API
 
 from models import Question
 
@@ -91,10 +92,12 @@ def search_question():
   try:
     search_str = "%"+request.args.get('search_str')+"%"
     questions = Question.query.filter(or_(Question.subjectName.ilike(search_str), Question.staff.ilike(search_str), Question.shortForm.ilike(search_str)))
-    print(questions)
     return  jsonify([e.serialize() for e in questions])
   except Exception as e:
     return(str(e))
+
+
+#Contact Us API
 
 @app.route("/api/v1/contactus", methods=['POST'])
 def contact_us():
@@ -103,7 +106,7 @@ def contact_us():
     name = contact_data['name']
     email = contact_data['email']
     message = contact_data['message']
-    __send_email(os.getenv('EMAIL_SUB'), [email])
+    __send_email(os.getenv('EMAIL_SUB'), [email], message)
     res = {
         'status': "Submission successful",
         'name': name,
@@ -114,8 +117,17 @@ def contact_us():
   except Exception as e:
     return (str(e)) 
 
+def __send_email(sub, recipient_list, message):
+  msg = Message(subject=sub,
+              sender = (os.getenv('MAIL_SENDER_NAME'), app.config.get("MAIL_USERNAME")),
+              recipients = os.getenv("USER_NAME"),
+              body = "From: "+recipient_list+"Message: "+message)
+  mail.send(msg)
 
-@app.route("/api/v1/github/contributors")
+
+# GITHUB Contributors API
+
+@app.route("/api/v1/github/contributors", methods=["GET"])
 def vicky():
     g = Github()
     details=[]
@@ -124,7 +136,7 @@ def vicky():
         commits=0
         conts=0
         print("start")
-        for repo in g.get_user(os.getenv("USER_NAME")).get_repos():
+        for repo in g.get_user(os.getenv("GITHUB_USER_NAME")).get_repos():
             repo1 = g.get_repo(repo.full_name)
             pulls += repo1.get_pulls().totalCount
             commits += repo1.get_commits().totalCount
@@ -134,24 +146,42 @@ def vicky():
     except Exception as e:
         return(str(e))
 
-def __send_email(sub, recipient_list):
-  msg = Message(subject=sub,
-              sender = (os.getenv('MAIL_SENDER_NAME'), app.config.get("MAIL_USERNAME")),
-              recipients = recipient_list,
-              body = "This is a test email I sent with Gmail and Python!")
-  mail.send(msg)
+
+# Books API
 
 from models import Book
-@app.route('/<string:a>/<string:t>/<string:u>', methods=['POST'])
-def add_book(a, t, u):
-    ni = request.files['Image']
-    img = Book(Author=a, Title=t, Image=ni.read(), Url=u)
-    db.session.add(img)
+@app.route('/api/v1/book/add', methods=['POST'])
+def add_book():
+  book_data = request.get_json()['book']
+  title = book_data['title']
+  author = book_data['author']
+  publisher = book_data['publisher']
+  isbn = book_data['isbn']
+  url = book_data['url']
+
+  try:
+    book = Book(
+        title = title,
+        author = author,
+        publisher = publisher,
+        isbn = isbn,
+        url = url
+    )
+    db.session.add(book)
     db.session.commit()
-    return "Book Details Added Successfully"
+    res = {
+      'id': book.id,
+      'title': book.title,
+      'author': book.author,
+      'publisher': book.publisher,
+      'isbn': book.isbn,
+      'url': book.url
+    }
+    return jsonify(res)
+  except Exception as e:
+    return(str(e))
 
-
-@app.route("/api/v1/showBooks", methods=['GET'])
+@app.route("/api/v1/book/all", methods=['GET'])
 def get_all_books():
     try:
         books = Book.query.all()
@@ -160,11 +190,11 @@ def get_all_books():
         return str(e)
 
 
-@app.route("/search", methods=['GET'])
+@app.route("/api/v1/book/search", methods=['GET'])
 def search_book():
     try:
         search_str = "%" + request.args.get('search_str') + "%"
-        books = Book.query.filter(or_(Book.Author.ilike(search_str), Book.Title.ilike(search_str)))
+        books = Book.query.filter(or_(Book.author.ilike(search_str), Book.title.ilike(search_str), Book.publisher.ilike(search_str)))
         print(books)
         return jsonify([e.serialize() for e in books])
     except Exception as e:

@@ -34,16 +34,18 @@ class Book(db.Model):
     __tablename__ = 'books'
 
     id = db.Column(db.Integer, primary_key=True)
-    Author = db.Column(db.String())
-    Title = db.Column(db.String())
-    Image = db.Column(db.LargeBinary)
-    Url = db.Column(db.String())
+    author = db.Column(db.String())
+    title = db.Column(db.String())
+    isbn = db.Column(db.String())
+    url = db.Column(db.String())
+    publisher = db.Column(db.String())
 
-    def __init__(self, Author, Title, Image, Url):
-        self.Author = Author
-        self.Title = Title
-        self.Image = Image
-        self.Url = Url
+    def __init__(self, author, title, isbn, url, publisher):
+        self.author = author
+        self.title = title
+        self.isbn = isbn
+        self.url = url
+        self.publisher = publisher
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
@@ -51,7 +53,9 @@ class Book(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'Author': self.Author,
-            'title': self.Title,
-            'Url': self.Url
+            'author': self.author,
+            'title': self.title,
+            'isbn': self.isbn,
+            'url': self.url,
+            'publisher': self.publisher
         }
