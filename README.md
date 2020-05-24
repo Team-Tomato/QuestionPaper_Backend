@@ -19,13 +19,17 @@ source env/bin/activate
 ```
 pip install -r requirements.txt
 ```
-4. Add or modify the **.env** file according to your local postgres database. Here is the example **.env** file. Leave the APP_SETTINGS as it is.
+4. Add or modify the **.env** file according to your local postgres database. Here is the example **.env** file. Leave the APP_SETTINGS as it is 
 ```
 APP_SETTINGS="config.DevelopmentConfig"
 POSTGRES_URL="127.0.0.1:5432"
 POSTGRES_USER="postgres"
 POSTGRES_PW="password"
 POSTGRES_DB="db-name"
+EMAIL_USER="email_id"
+EMAIL_PASSWORD="email_password"
+RECEIVER_MAIL="email_id"
+GITHUB_USER_NAME="Team-Tomato"
 ```
 5. Create the database in your local with your database name **db-name** adn start your local database server.
 6. Run the following commands to mirate the database.
