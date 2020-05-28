@@ -146,7 +146,7 @@ def __send_email(sub, recipient_list, message):
 # GITHUB Contributors API
 
 @app.route("/api/v1/github/contributors", methods=["GET"])
-def gethubRepoDetails():
+def githubRepoDetails():
     g = Github()
     details=[]
     try:
