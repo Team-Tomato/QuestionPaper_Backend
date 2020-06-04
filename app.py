@@ -4,7 +4,8 @@ from sqlalchemy import or_, func
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
 from github import Github
-import os,requests,json
+import os,requests,json,jwt
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -31,6 +32,24 @@ print(os.getenv('EMAIL_USER'))
 app.config.update(mail_settings)
 mail = Mail(app)
 
+
+def Key_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        Key = None
+
+        if 'x-access-Key' in request.headers:
+            Key = request.headers['x-access-Key']
+
+        try: 
+            data = jwt.decode(os.getenv('Token'),Key)
+        except:
+            return jsonify({'message' : 'Permission is denied to access the API'}), 401
+
+        return f(*args, **kwargs)
+
+    return decorated
+
 # Questions API
 
 from models import Question
@@ -40,6 +59,7 @@ def get():
   return "<h1>Team Tomato welcome you</h1>"
 
 @app.route("/api/v1/question/add", methods=['POST'])
+@Key_required
 def add_question():
   question_data = request.get_json()['question']
 
@@ -151,6 +171,7 @@ def vicky():
 
 from models import Book
 @app.route('/api/v1/book/add', methods=['POST'])
+@Key_required
 def add_book():
   book_data = request.get_json()['book']
   title = book_data['title']
