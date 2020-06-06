@@ -4,8 +4,8 @@ from sqlalchemy import or_, func
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
 from github import Github
-import os,requests,json,jwt
-from functools import wraps
+import os,requests,json
+from apiDecorator import Key_required
 
 app = Flask(__name__)
 
@@ -33,22 +33,6 @@ app.config.update(mail_settings)
 mail = Mail(app)
 
 
-def Key_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        Key = None
-
-        if 'x-access-Key' in request.headers:
-            Key = request.headers['x-access-Key']
-
-        try: 
-            data = jwt.decode(os.getenv('Token'),Key)
-        except:
-            return jsonify({'message' : 'Permission is denied to access the API'}), 401
-
-        return f(*args, **kwargs)
-
-    return decorated
 
 # Questions API
 
