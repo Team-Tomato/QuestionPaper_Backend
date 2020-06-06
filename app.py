@@ -8,6 +8,7 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from github import Github
 import os,requests,json
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -120,26 +121,34 @@ def search_question():
 @app.route("/api/v1/contactus", methods=['POST'])
 def contact_us():
   try:
+    mail_regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     contact_data = request.get_json()['contact']
     name = contact_data['name']
     email = contact_data['email']
     message = contact_data['message']
-    __send_email(os.getenv('EMAIL_SUB'), email, message)
-    res = {
-        'status': "Submission successful",
-        'name': name,
-        'email': email,
-        'message': message
-    }
-    return jsonify(res)
+    if len(name) > 1 and len(message) > 2 and re.search(mail_regex,email):
+      __send_email(os.getenv('EMAIL_SUB'), email, message, name)
+      res = {
+          'status': "Submission successful",
+          'name': name,
+          'email': email,
+          'message': message
+      }
+      return jsonify(res)
+    else:
+      res = {
+          'status': "Submission failed",
+          'message': "Enter valid name, email and message"
+      }
+      return jsonify(res)
   except Exception as e:
     return (str(e)) 
 
-def __send_email(sub, recipient_list, message):
+def __send_email(sub, recipient_list, message, name):
   msg = Message(subject=sub,
               sender = (os.getenv('MAIL_SENDER_NAME'), app.config.get("MAIL_USERNAME")),
               recipients = [os.getenv("RECEIVER_MAIL")],
-              body = "From: "+recipient_list+" --- Message: "+message)
+              body = "Name: "+name+" --- From: "+recipient_list+" --- Message: "+message)
   mail.send(msg)
 
 
