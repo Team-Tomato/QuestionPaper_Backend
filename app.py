@@ -3,19 +3,38 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, func
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
+from flask_cors import CORS
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 from github import Github
 import os,requests,json
-from apiDecorator import Key_required
+import re
 
 app = Flask(__name__)
+CORS(app)
 
+#Dot env added
 APP_ROOT = os.path.dirname(__file__)   # refers to application_top
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
+#SQLalchemy
 app.config.from_object(os.getenv('APP_SETTINGS'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+#Importing Model
+from models import Question
+from models import Book
+
+
+#Flask admin panel
+app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+admin = Admin(app, name='Team Tomato', template_mode='bootstrap3')
+
+#Flask admin model views
+admin.add_view(ModelView(Question, db.session))
+admin.add_view(ModelView(Book, db.session))
 
 # Mail settings
 
@@ -33,10 +52,7 @@ app.config.update(mail_settings)
 mail = Mail(app)
 
 
-
-# Questions API
-
-from models import Question
+# Question API
 
 @app.route("/", methods=['GET'])
 def get():
@@ -106,33 +122,41 @@ def search_question():
 @app.route("/api/v1/contactus", methods=['POST'])
 def contact_us():
   try:
+    mail_regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     contact_data = request.get_json()['contact']
     name = contact_data['name']
     email = contact_data['email']
     message = contact_data['message']
-    __send_email(os.getenv('EMAIL_SUB'), email, message)
-    res = {
-        'status': "Submission successful",
-        'name': name,
-        'email': email,
-        'message': message
-    }
-    return jsonify(res)
+    if len(name) > 1 and len(message) > 2 and re.search(mail_regex,email):
+      __send_email(os.getenv('EMAIL_SUB'), email, message, name)
+      res = {
+          'status': "Submission successful",
+          'name': name,
+          'email': email,
+          'message': message
+      }
+      return jsonify(res)
+    else:
+      res = {
+          'status': "Submission failed",
+          'message': "Enter valid name, email and message"
+      }
+      return jsonify(res)
   except Exception as e:
     return (str(e)) 
 
-def __send_email(sub, recipient_list, message):
+def __send_email(sub, recipient_list, message, name):
   msg = Message(subject=sub,
               sender = (os.getenv('MAIL_SENDER_NAME'), app.config.get("MAIL_USERNAME")),
               recipients = [os.getenv("RECEIVER_MAIL")],
-              body = "From: "+recipient_list+" --- Message: "+message)
+              body = "Name: "+name+" --- From: "+recipient_list+" --- Message: "+message)
   mail.send(msg)
 
 
 # GITHUB Contributors API
 
 @app.route("/api/v1/github/contributors", methods=["GET"])
-def vicky():
+def githubRepoDetails():
     g = Github()
     details=[]
     try:
@@ -153,7 +177,6 @@ def vicky():
 
 # Books API
 
-from models import Book
 @app.route('/api/v1/book/add', methods=['POST'])
 @Key_required
 def add_book():
