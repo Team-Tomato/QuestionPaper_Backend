@@ -9,6 +9,7 @@ from flask_admin.contrib.sqla import ModelView
 from github import Github
 import os,requests,json
 import re
+from apiDecorator import Key_required
 
 app = Flask(__name__)
 CORS(app)
@@ -59,6 +60,7 @@ def get():
   return "<h1>Team Tomato welcome you</h1>"
 
 @app.route("/api/v1/question/add", methods=['POST'])
+@Key_required
 def add_question():
   question_data = request.get_json()['question']
 
@@ -177,6 +179,7 @@ def githubRepoDetails():
 # Books API
 
 @app.route('/api/v1/book/add', methods=['POST'])
+@Key_required
 def add_book():
   book_data = request.get_json()['book']
   title = book_data['title']
