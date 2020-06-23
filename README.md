@@ -30,6 +30,7 @@ EMAIL_USER="email_id"
 EMAIL_PASSWORD="email_password"
 RECEIVER_MAIL="email_id"
 GITHUB_USER_NAME="Team-Tomato"
+Token="Api_Token"
 ```
 5. Create the database in your local with your database name **db-name** adn start your local database server.
 6. Run the following commands to mirate the database.
