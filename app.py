@@ -8,13 +8,14 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from github import Github
 import os,requests,json
+import re
+from apiDecorator import Key_required
+
+#import the validation file
+from validate import check
 
 app = Flask(__name__)
 CORS(app)
-
-#Add log files and logging format
-FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
-LOG_FILE = "my_app.log"
 
 #Dot env added
 APP_ROOT = os.path.dirname(__file__)   # refers to application_top
@@ -55,32 +56,21 @@ app.config.update(mail_settings)
 mail = Mail(app)
 
 
-# Create of logger and file handler
-def get_logger(logger_name):
-   logger = logging.getLogger(logger_name)
-   logger.setLevel(logging.DEBUG)
-   logger.addHandler(get_file_handler())
-   logger.propagate = False
-   return logger
-def get_file_handler():
-   file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
-   file_handler.setFormatter(FORMATTER)
-   return file_handler
-
 # Question API
 
 @app.route("/", methods=['GET'])
 def get():
-  mylogger = get_logger("home page")
-  mylogger.info(request.remote_addr)
   return "<h1>Team Tomato welcome you</h1>"
 
 @app.route("/api/v1/question/add", methods=['POST'])
+#@Key_required
 def add_question():
-  mylogger = get_logger("add_question")
-  mylogger.info(request.remote_addr)
-
   question_data = request.get_json()['question']
+
+  val = 0
+  result = check(question_data,val)
+  if(result == 1):
+      return "<h1>please enter valid data</h1>"
 
   subjectName = question_data['subjectName']
   shortForm = question_data['shortForm']
@@ -112,9 +102,6 @@ def add_question():
 
 @app.route("/api/v1/question", methods=['GET'])
 def get_all_questions():
-  mylogger = get_logger("get_all_questions")
-  mylogger.info(request.remote_addr)
-
   try:
     questions = Question.query.all()
     return  jsonify([e.serialize() for e in questions])
@@ -123,9 +110,6 @@ def get_all_questions():
 
 @app.route("/api/v1/question/<id_>", methods=['GET'])
 def get_question_by_id(id_):
-  mylogger = get_logger("get_question_by_id")
-  mylogger.info(request.remote_addr)
-
   try:
     question = Question.query.filter_by(id=id_).first()
     return jsonify(question.serialize())
@@ -134,8 +118,6 @@ def get_question_by_id(id_):
 
 @app.route("/api/v1/question/search", methods=['GET'])
 def search_question():
-  mylogger = get_logger("search_question")
-  mylogger.info(request.remote_addr)
   try:
     search_str = "%"+request.args.get('search_str')+"%"
     questions = Question.query.filter(or_(Question.subjectName.ilike(search_str), Question.staff.ilike(search_str), Question.shortForm.ilike(search_str)))
@@ -148,29 +130,35 @@ def search_question():
 
 @app.route("/api/v1/contactus", methods=['POST'])
 def contact_us():
-  mylogger = get_logger("contact_us")
-  mylogger.info(request.remote_addr)
   try:
+    mail_regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     contact_data = request.get_json()['contact']
     name = contact_data['name']
     email = contact_data['email']
     message = contact_data['message']
-    __send_email(os.getenv('EMAIL_SUB'), email, message)
-    res = {
-        'status': "Submission successful",
-        'name': name,
-        'email': email,
-        'message': message
-    }
-    return jsonify(res)
+    if len(name) > 1 and len(message) > 2 and re.search(mail_regex,email):
+      __send_email(os.getenv('EMAIL_SUB'), email, message, name)
+      res = {
+          'status': "Submission successful",
+          'name': name,
+          'email': email,
+          'message': message
+      }
+      return jsonify(res)
+    else:
+      res = {
+          'status': "Submission failed",
+          'message': "Enter valid name, email and message"
+      }
+      return jsonify(res)
   except Exception as e:
     return (str(e)) 
 
-def __send_email(sub, recipient_list, message):
+def __send_email(sub, recipient_list, message, name):
   msg = Message(subject=sub,
               sender = (os.getenv('MAIL_SENDER_NAME'), app.config.get("MAIL_USERNAME")),
               recipients = [os.getenv("RECEIVER_MAIL")],
-              body = "From: "+recipient_list+" --- Message: "+message)
+              body = "Name: "+name+" --- From: "+recipient_list+" --- Message: "+message)
   mail.send(msg)
 
 
@@ -178,8 +166,6 @@ def __send_email(sub, recipient_list, message):
 
 @app.route("/api/v1/github/contributors", methods=["GET"])
 def githubRepoDetails():
-    mylogger = get_logger("githubRepoDetails")
-    mylogger.info(request.remote_addr)
     g = Github()
     details=[]
     try:
@@ -196,15 +182,14 @@ def githubRepoDetails():
         return jsonify(details)
     except Exception as e:
         return(str(e))
+        
 
 
 # Books API
 
 @app.route('/api/v1/book/add', methods=['POST'])
+@Key_required
 def add_book():
-  mylogger = get_logger("add_book")
-  mylogger.info(request.remote_addr)
-
   book_data = request.get_json()['book']
   title = book_data['title']
   author = book_data['author']
@@ -236,9 +221,6 @@ def add_book():
 
 @app.route("/api/v1/book/all", methods=['GET'])
 def get_all_books():
-    mylogger = get_logger("get_all_books")
-    mylogger.info(request.remote_addr)
-
     try:
         books = Book.query.all()
         return jsonify([e.serialize() for e in books])
@@ -248,9 +230,6 @@ def get_all_books():
 
 @app.route("/api/v1/book/search", methods=['GET'])
 def search_book():
-    mylogger = get_logger("search_book")
-    mylogger.info(request.remote_addr)
-
     try:
         search_str = "%" + request.args.get('search_str') + "%"
         books = Book.query.filter(or_(Book.author.ilike(search_str), Book.title.ilike(search_str), Book.publisher.ilike(search_str)))
