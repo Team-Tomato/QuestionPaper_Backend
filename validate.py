@@ -1,13 +1,13 @@
 import validators
 
-def validate_subjectName(val,subjectName):
-    if not subjectName:
-        print("No subjectName provided")
+def validate_sName(val,sName):
+    if not sName:
+        print(sName,"No Name provided")
         val = 1
         return val
 
-    if len(subjectName) < 5 or len(subjectName) > 20:
-        print("subjectName must be between 5 and 20 characters")
+    if len(sName) < 5 or len(sName) > 20:
+        print(sName,"given Name must be between 5 and 20 characters")
         val = 1
         return val
 
@@ -21,17 +21,6 @@ def validate_shortForm(val,shortForm):
         print("shortForm must be between 2 and 5 characters")
         val = 1
         return val
-
-def validate_staff(val,staff):
-    if not staff:
-        print("No staff provided")
-        val = 1
-        return val
-    if len(staff) < 5 or len(staff) > 20:
-        print("staff must be between 5 and 20 characters")
-        val = 1
-        return val
-    return
 
 def validate_year(val,year):
     if not year:
@@ -51,7 +40,7 @@ def check(question_data,val):
     url = question_data['url']
 
     #checking for valid subjectName
-    value = validate_subjectName(val,subjectName)
+    value = validate_sName(val,subjectName)
     if (value == 1):
         return value
     #checking for valid shortForm
@@ -59,12 +48,72 @@ def check(question_data,val):
     if (value == 1):
         return value
     # checking for valid staff
-    value = validate_staff(val, staff)
+    value = validate_sName(val, staff)
     if (value == 1):
         return value
 
     #checking for valid year
     value = validate_year(val, year)
+    if (value == 1):
+        return value
+
+    #checking for valid url
+    valid = validators.url(url)
+    if valid == True:
+        return value
+    else:
+        value = 1
+        print("Invalid url")
+        return value
+
+    return value
+
+#checking for book
+def validate_Name(val,Name):
+    if not Name:
+        print(Name,"No Name provided")
+        val = 1
+        return val
+
+    if len(Name) < 5 or len(Name) > 20:
+        print(Name,"given Name must be between 5 and 20 characters")
+        val = 1
+        return val
+
+def validate_isbn(val,isbn):
+    if not isbn:
+        print("No year provided")
+        val = 1
+        return val
+    if (len(isbn)<10) or (len(isbn) > 13) :
+        print("isbn must be between 10 and 13 characters")
+        val = 1
+        return val
+
+def check_book(book_data,val):
+    title = book_data['title']
+    author = book_data['author']
+    publisher = book_data['publisher']
+    isbn = book_data['isbn']
+    url = book_data['url']
+
+
+    #checking for valid title
+    value = validate_Name(val,title)
+    if (value == 1):
+        return value
+    # checking for valid author
+    value = validate_Name(val, author)
+    if (value == 1):
+        return value
+
+    # checking for valid publisher
+    value = validate_Name(val, publisher)
+    if (value == 1):
+        return value
+
+    # checking for valid isbn
+    value = validate_isbn(val, isbn)
     if (value == 1):
         return value
 
