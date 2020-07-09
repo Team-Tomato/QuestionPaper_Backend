@@ -1,4 +1,5 @@
 import validators
+import re
 
 def validate_sName(val,sName):
     if not sName:
@@ -127,3 +128,31 @@ def check_book(book_data,val):
         return value
 
     return value
+
+# checking for contact us
+def validate_email(val,email):
+    if not email:
+        print("No year provided")
+        val = 1
+        return val
+    if not re.match("[^@]+@[^@]+\.[^@]+", email):
+        print("Provided email is not an email address")
+        val = 1
+        return val
+
+def checking_contactus(contact_data, val):
+    name = contact_data['name']
+    email = contact_data['email']
+
+    #checking for name
+    value = validate_Name(val, name)
+    if (value == 1):
+        return value
+
+    #checking for email
+    value = validate_email(val,email)
+    if (value == 1):
+        return value
+
+    return value
+
