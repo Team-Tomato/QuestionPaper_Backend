@@ -133,6 +133,12 @@ def contact_us():
   try:
     mail_regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     contact_data = request.get_json()['contact']
+
+    val = 0
+    result = checking_contactus(contact_data, val)
+    if (result == 1):
+        return "<h1>please enter valid data</h1>"
+
     name = contact_data['name']
     email = contact_data['email']
     message = contact_data['message']
