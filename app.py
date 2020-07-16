@@ -11,8 +11,17 @@ import os,requests,json
 import re
 from apiDecorator import Key_required
 
+import logging
+import requests
+import sys
+from logging.handlers import TimedRotatingFileHandler
+
 app = Flask(__name__)
 CORS(app)
+
+# Create file and set file formate
+FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
+LOG_FILE = "my_app.log"
 
 #Dot env added
 APP_ROOT = os.path.dirname(__file__)   # refers to application_top
@@ -53,15 +62,36 @@ app.config.update(mail_settings)
 mail = Mail(app)
 
 
+# Create logger and file handler
+def get_file_handler():
+    file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
+    file_handler.setFormatter(FORMATTER)
+    return file_handler
+
+
+def get_logger(logger_name):
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.DEBUG)  # better to have too much log than not enough
+    # logger.addHandler(get_console_handler())
+    logger.addHandler(get_file_handler())
+    # with this pattern, it's rarely necessary to propagate the error up to parent
+    logger.propagate = False
+    return logger
+
 # Question API
 
 @app.route("/", methods=['GET'])
 def get():
+  mylogger = get_logger("get")
+  mylogger.info(requests.get('https://api.ipify.org/').text)
   return "<h1>Team Tomato welcome you</h1>"
 
 @app.route("/api/v1/question/add", methods=['POST'])
 @Key_required
 def add_question():
+  mylogger = get_logger("add_question")
+  mylogger.info(requests.get('https://api.ipify.org/').text)
+
   question_data = request.get_json()['question']
 
   subjectName = question_data['subjectName']
@@ -94,6 +124,8 @@ def add_question():
 
 @app.route("/api/v1/question", methods=['GET'])
 def get_all_questions():
+  mylogger = get_logger("get_all_questions")
+  mylogger.info(requests.get('https://api.ipify.org/').text)
   try:
     questions = Question.query.all()
     return  jsonify([e.serialize() for e in questions])
@@ -102,6 +134,8 @@ def get_all_questions():
 
 @app.route("/api/v1/question/<id_>", methods=['GET'])
 def get_question_by_id(id_):
+  mylogger = get_logger("get_question_by_id")
+  mylogger.info(requests.get('https://api.ipify.org/').text)
   try:
     question = Question.query.filter_by(id=id_).first()
     return jsonify(question.serialize())
@@ -110,6 +144,8 @@ def get_question_by_id(id_):
 
 @app.route("/api/v1/question/search", methods=['GET'])
 def search_question():
+  mylogger = get_logger("search_question")
+  mylogger.info(requests.get('https://api.ipify.org/').text)
   try:
     search_str = "%"+request.args.get('search_str')+"%"
     questions = Question.query.filter(or_(Question.subjectName.ilike(search_str), Question.staff.ilike(search_str), Question.shortForm.ilike(search_str)))
@@ -122,6 +158,9 @@ def search_question():
 
 @app.route("/api/v1/contactus", methods=['POST'])
 def contact_us():
+  mylogger = get_logger("contact_us")
+  mylogger.info(requests.get('https://api.ipify.org/').text)
+
   try:
     mail_regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     contact_data = request.get_json()['contact']
@@ -147,6 +186,9 @@ def contact_us():
     return (str(e)) 
 
 def __send_email(sub, recipient_list, message, name):
+  mylogger = get_logger("get")
+  str = sub+" "+recipient_list+" "+message+" "+requests.get('https://api.ipify.org/').text
+  mylogger.info(str)
   msg = Message(subject=sub,
               sender = (os.getenv('MAIL_SENDER_NAME'), app.config.get("MAIL_USERNAME")),
               recipients = [os.getenv("RECEIVER_MAIL")],
@@ -158,6 +200,8 @@ def __send_email(sub, recipient_list, message, name):
 
 @app.route("/api/v1/github/contributors", methods=["GET"])
 def githubRepoDetails():
+    mylogger = get_logger("githubRepoDetails")
+    mylogger.info(requests.get('https://api.ipify.org/').text)
     g = Github()
     details=[]
     try:
@@ -181,6 +225,8 @@ def githubRepoDetails():
 @app.route('/api/v1/book/add', methods=['POST'])
 @Key_required
 def add_book():
+  mylogger = get_logger("add_book")
+  mylogger.info(requests.get('https://api.ipify.org/').text)
   book_data = request.get_json()['book']
   title = book_data['title']
   author = book_data['author']
@@ -212,6 +258,8 @@ def add_book():
 
 @app.route("/api/v1/book/all", methods=['GET'])
 def get_all_books():
+    mylogger = get_logger("get_all_books")
+    mylogger.info(requests.get('https://api.ipify.org/').text)
     try:
         books = Book.query.all()
         return jsonify([e.serialize() for e in books])
@@ -221,6 +269,8 @@ def get_all_books():
 
 @app.route("/api/v1/book/search", methods=['GET'])
 def search_book():
+    mylogger = get_logger("search_books")
+    mylogger.info(requests.get('https://api.ipify.org/').text)
     try:
         search_str = "%" + request.args.get('search_str') + "%"
         books = Book.query.filter(or_(Book.author.ilike(search_str), Book.title.ilike(search_str), Book.publisher.ilike(search_str)))
