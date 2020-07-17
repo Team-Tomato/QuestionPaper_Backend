@@ -10,15 +10,9 @@ from github import Github
 import os,requests,json
 import re
 from apiDecorator import Key_required
-<<<<<<< HEAD
-<<<<<<< HEAD
 
 #import the validation file
 from validate import *
-=======
->>>>>>> upstream/master
-=======
->>>>>>> 6e762cdebf67f4146096a3337a37c0d3d91daa31
 
 app = Flask(__name__)
 CORS(app)
@@ -69,15 +63,7 @@ def get():
   return "<h1>Team Tomato welcome you</h1>"
 
 @app.route("/api/v1/question/add", methods=['POST'])
-<<<<<<< HEAD
-<<<<<<< HEAD
-#@Key_required
-=======
 @Key_required
->>>>>>> upstream/master
-=======
-@Key_required
->>>>>>> 6e762cdebf67f4146096a3337a37c0d3d91daa31
 def add_question():
   question_data = request.get_json()['question']
 
@@ -202,15 +188,7 @@ def githubRepoDetails():
 # Books API
 
 @app.route('/api/v1/book/add', methods=['POST'])
-<<<<<<< HEAD
-<<<<<<< HEAD
-#@Key_required
-=======
 @Key_required
->>>>>>> upstream/master
-=======
-@Key_required
->>>>>>> 6e762cdebf67f4146096a3337a37c0d3d91daa31
 def add_book():
   book_data = request.get_json()['book']
 
