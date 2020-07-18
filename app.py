@@ -11,6 +11,9 @@ import os,requests,json
 import re
 from apiDecorator import Key_required
 
+#import the validation file
+from validate import *
+
 app = Flask(__name__)
 CORS(app)
 
@@ -63,6 +66,11 @@ def get():
 @Key_required
 def add_question():
   question_data = request.get_json()['question']
+
+  val = 0
+  result = check(question_data,val)
+  if(result == 1):
+      return "<h1>please enter valid data</h1>"
 
   subjectName = question_data['subjectName']
   shortForm = question_data['shortForm']
@@ -174,6 +182,7 @@ def githubRepoDetails():
         return jsonify(details)
     except Exception as e:
         return(str(e))
+        
 
 
 # Books API
@@ -182,6 +191,12 @@ def githubRepoDetails():
 @Key_required
 def add_book():
   book_data = request.get_json()['book']
+
+  val = 0
+  result = check_book(book_data, val)
+  if (result == 1):
+      return "<h1>please enter valid data</h1>"
+
   title = book_data['title']
   author = book_data['author']
   publisher = book_data['publisher']
