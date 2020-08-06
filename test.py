@@ -52,6 +52,23 @@ class FlaskTest(unittest.TestCase):
                     "url": "https type"
                 }
         }
+	self.data4 = {
+             "contact":
+                 {
+                    "name": "Team Tomato",
+                    "email": "teamtomato.oss@gmail.com",
+                    "message": "Testing API"
+	             }
+        }
+
+        self.data5 = {
+            "contact":
+                {
+                    "name": "Team Tomatojdfodofsfdisjfjodsjfoijsdjf",
+                    "email": "teamtomato.oss@gmail.com",
+                    "message": "Testing API"
+                }
+        }
 
 #Question testing
     #check if response is 200
@@ -63,7 +80,7 @@ class FlaskTest(unittest.TestCase):
     def test_index_data(self):
         res = self.client.get('/')
         self.assertTrue(b'Team Tomato' in res.data)
-    """
+
     #positive test for add question
     def test_add_question_positive(self):
         res = self.client.post(path = '/api/v1/question/add',data=json.dumps(self.data),content_type ='application/json')
@@ -98,7 +115,6 @@ class FlaskTest(unittest.TestCase):
     def test_search_question_negative(self):
         res = self.client.get('/api/v1/question/search?search_str=mfjijdjfjsdfjdjfsdjfsff')
         self.assertEqual(res.data,b'[]\n')
-"""
 
 #Book testing
 #positive test for add book
@@ -126,9 +142,21 @@ class FlaskTest(unittest.TestCase):
         res = self.client.get('/api/v1/book/search?search_str=mfjijdjfjsdfjdjfsdjfsff')
         self.assertEqual(res.data,b'[]\n')
 
+#checking for github contributor
+    def test_github_contributor(self):
+        res = self.client.get('/api/v1/github/contributors')
+        self.assertEqual(res.status_code,200)
 
+#checking for contact_us
+    #positive test for add question
+    def test_contactus_positive(self):
+        res = self.client.post(path = '/api/v1/contactus',data=json.dumps(self.data4),content_type ='application/json')
+        self.assertEqual(res.status_code,200)
 
-
+    # negative test for add question
+    def test_contactus_negative(self):
+        res = self.client.post(path='/api/v1/contactus', data=json.dumps(self.data5),content_type='application/json')
+        self.assertTrue(b'valid' in res.data)
 
 
 
